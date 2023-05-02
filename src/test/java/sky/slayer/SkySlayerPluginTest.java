@@ -1,13 +1,13 @@
-package com.example;
+package sky.slayer;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class ExamplePluginTest
+public class SkySlayerPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ExamplePlugin.class);
+		ExternalPluginManager.loadBuiltin(SkySlayerPlugin.class);
 		RuneLite.main(args);
 	}
 }
