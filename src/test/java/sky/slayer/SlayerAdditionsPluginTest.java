@@ -3,7 +3,7 @@ package sky.slayer;
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class SkySlayerPluginTest
+public class SlayerAdditionsPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
