@@ -7,7 +7,7 @@ public class SkySlayerPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(SkySlayerPlugin.class);
+		ExternalPluginManager.loadBuiltin(SlayerAdditionsPlugin.class);
 		RuneLite.main(args);
 	}
 }
