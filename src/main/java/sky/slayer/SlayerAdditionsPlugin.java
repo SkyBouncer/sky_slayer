@@ -1,3 +1,8 @@
+/*
+ * Plugin for additional slayer features.
+ * Based on the original slayer plugin from RuneLite.
+ */
+
 package sky.slayer;
 
 import com.google.inject.Provides;
