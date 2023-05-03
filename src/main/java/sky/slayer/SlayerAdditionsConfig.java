@@ -6,13 +6,10 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup(SkySlayerConfig.GROUP_NAME)
-public interface SkySlayerConfig extends Config
+@ConfigGroup(SlayerAdditionsConfig.GROUP_NAME)
+public interface SlayerAdditionsConfig extends Config
 {
-	String GROUP_NAME = "SkySlayer";
-	String TASK_NAME_KEY = "taskName";
-	String AMOUNT_KEY = "amount";
-	String TASK_LOC_KEY = "taskLocation";
+	String GROUP_NAME = "SlayerAdditions";
 	String SLAYER_MASTER_NAME_KEY = "slayerMaster";
 
 	@ConfigItem(

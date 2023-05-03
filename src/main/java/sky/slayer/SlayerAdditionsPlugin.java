@@ -1,7 +1,5 @@
 package sky.slayer;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Binder;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -12,7 +10,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,17 +41,16 @@ import net.runelite.client.util.Text;
 import org.apache.commons.lang3.ArrayUtils;
 
 @PluginDescriptor(
-	name = "SkySlayer",
-	description = "Slayer enhancements",
-	tags = {"combat", "notifications", "overlay", "tasks"}
+	name = "Slayer Additions",
+	description = "Slayer additions",
+	tags = {"slayer", "highlight", "overlay", "minimap", "tasks"}
 )
 @Slf4j
-public class SkySlayerPlugin extends Plugin
+public class SlayerAdditionsPlugin extends Plugin
 {
 	private static final String TURAEL = "Turael";
 	private static final String SPRIA = "Spria";
 
-	// NPC messages
 	private static final Pattern SLAYER_ASSIGN_MESSAGE = Pattern.compile(".*(?:Your new task is to kill \\d+) (?<name>.+)(?:.)");
 	private static final Pattern SLAYER_CURRENT_MESSAGE = Pattern.compile(".*(?:You're still hunting) (?<name>.+)(?:[,;] you have \\d+ to go.)");
 
@@ -62,7 +58,7 @@ public class SkySlayerPlugin extends Plugin
 	private Client client;
 
 	@Inject
-	private SkySlayerConfig config;
+	private SlayerAdditionsConfig config;
 
 	@Inject
 	private ConfigManager configManager;
@@ -99,7 +95,7 @@ public class SkySlayerPlugin extends Plugin
 	private boolean loginFlag;
 	private final List<Pattern> targetNames = new ArrayList<>();
 
-	public final Function<NPC, HighlightedNpc> isAdditionalTarget = (n) ->
+	public final Function<NPC, HighlightedNpc> slayerAdditionsHighlighter = (n) ->
 	{
 		if (targets.contains(n) && (config.highlightMinimap() || config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(SPRIA))))
 		{
@@ -119,7 +115,7 @@ public class SkySlayerPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		npcOverlayService.registerHighlighter(isAdditionalTarget);
+		npcOverlayService.registerHighlighter(slayerAdditionsHighlighter);
 
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
@@ -127,23 +123,21 @@ public class SkySlayerPlugin extends Plugin
 			clientThread.invoke(this::updateTask);
 		}
 
-		slayerMaster = configManager.getRSProfileConfiguration(SkySlayerConfig.GROUP_NAME, SkySlayerConfig.SLAYER_MASTER_NAME_KEY);
-		if (slayerMaster == null){
-			slayerMaster = "";
-		}
+		String storedSlayerMaster = configManager.getRSProfileConfiguration(SlayerAdditionsConfig.GROUP_NAME, SlayerAdditionsConfig.SLAYER_MASTER_NAME_KEY);
+		slayerMaster = storedSlayerMaster == null ? "" : storedSlayerMaster;
 	}
 
 	@Override
 	protected void shutDown()
 	{
-		npcOverlayService.unregisterHighlighter(isAdditionalTarget);
+		npcOverlayService.unregisterHighlighter(slayerAdditionsHighlighter);
 		targets.clear();
 	}
 
 	@Provides
-	SkySlayerConfig provideSlayerConfig(ConfigManager configManager)
+	SlayerAdditionsConfig provideSlayerConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(SkySlayerConfig.class);
+		return configManager.getConfig(SlayerAdditionsConfig.class);
 	}
 
 	@Subscribe
@@ -161,24 +155,16 @@ public class SkySlayerPlugin extends Plugin
 		}
 	}
 
-	private void setProfileConfig(String key, Object value)
+	private void saveSlayerMaster(String master)
 	{
-		if (value != null)
-		{
-			configManager.setRSProfileConfiguration(SkySlayerConfig.GROUP_NAME, key, value);
-		}
-		else
-		{
-			configManager.unsetRSProfileConfiguration(SkySlayerConfig.GROUP_NAME, key);
-		}
+		slayerMaster = master;
+		configManager.setRSProfileConfiguration(SlayerAdditionsConfig.GROUP_NAME, SlayerAdditionsConfig.SLAYER_MASTER_NAME_KEY, master);
 	}
 
-	private void save()
+	private void removeSlayerMaster()
 	{
-		setProfileConfig(SkySlayerConfig.AMOUNT_KEY, amount);
-		setProfileConfig(SkySlayerConfig.TASK_NAME_KEY, taskName);
-		setProfileConfig(SkySlayerConfig.TASK_LOC_KEY, taskLocation);
-		setProfileConfig(SkySlayerConfig.SLAYER_MASTER_NAME_KEY, slayerMaster);
+		slayerMaster = "";
+		configManager.unsetRSProfileConfiguration(SlayerAdditionsConfig.GROUP_NAME, SlayerAdditionsConfig.SLAYER_MASTER_NAME_KEY);
 	}
 
 	@Subscribe
@@ -215,23 +201,20 @@ public class SkySlayerPlugin extends Plugin
 		{
 			int taskId = client.getVarpValue(VarPlayer.SLAYER_TASK_CREATURE);
 			String taskName;
-			if (taskId == 98 /* Bosses, from [proc,helper_slayer_current_assignment] */)
+			if (taskId == 98)
 			{
-				taskName = client.getEnum(EnumID.SLAYER_TASK_BOSS)
-					.getStringValue(client.getVarbitValue(Varbits.SLAYER_TASK_BOSS));
+				taskName = client.getEnum(EnumID.SLAYER_TASK_BOSS).getStringValue(client.getVarbitValue(Varbits.SLAYER_TASK_BOSS));
 			}
 			else
 			{
-				taskName = client.getEnum(EnumID.SLAYER_TASK_CREATURE)
-					.getStringValue(taskId);
+				taskName = client.getEnum(EnumID.SLAYER_TASK_CREATURE).getStringValue(taskId);
 			}
 
 			int areaId = client.getVarpValue(VarPlayer.SLAYER_TASK_LOCATION);
 			String taskLocation = null;
 			if (areaId > 0)
 			{
-				taskLocation = client.getEnum(EnumID.SLAYER_TASK_LOCATION)
-					.getStringValue(areaId);
+				taskLocation = client.getEnum(EnumID.SLAYER_TASK_LOCATION).getStringValue(areaId);
 			}
 
 			if (loginFlag || !Objects.equals(taskName, this.taskName) || !Objects.equals(taskLocation, this.taskLocation))
@@ -241,7 +224,6 @@ public class SkySlayerPlugin extends Plugin
 			else if (amount != this.amount)
 			{
 				this.amount = amount;
-				setProfileConfig(SkySlayerConfig.AMOUNT_KEY, amount);
 			}
 		}
 		else if (this.amount > 0)
@@ -254,8 +236,6 @@ public class SkySlayerPlugin extends Plugin
 	public void onGameTick(GameTick tick)
 	{
 		loginFlag = false;
-
-		// Getting slayerMaster
 		Widget npcName = client.getWidget(WidgetInfo.DIALOG_NPC_NAME);
 		Widget npcDialog = client.getWidget(WidgetInfo.DIALOG_NPC_TEXT);
 		if (npcDialog != null && npcName != null && (npcName.getText().equals(TURAEL) || npcName.getText().equals(SPRIA)))
@@ -266,8 +246,7 @@ public class SkySlayerPlugin extends Plugin
 
 			if (mAssign.find() || mCurrent.find())
 			{
-				slayerMaster = npcName.getText();
-				setProfileConfig(SkySlayerConfig.SLAYER_MASTER_NAME_KEY, slayerMaster);
+				saveSlayerMaster(npcName.getText());
 				npcOverlayService.rebuild();
 			}
 		}
@@ -276,7 +255,7 @@ public class SkySlayerPlugin extends Plugin
 	@Subscribe
 	private void onConfigChanged(ConfigChanged event)
 	{
-		if (!event.getGroup().equals(SkySlayerConfig.GROUP_NAME))
+		if (!event.getGroup().equals(SlayerAdditionsConfig.GROUP_NAME))
 		{
 			return;
 		}
@@ -284,7 +263,6 @@ public class SkySlayerPlugin extends Plugin
 		npcOverlayService.rebuild();
 	}
 
-	@VisibleForTesting
 	boolean isTarget(NPC npc)
 	{
 		if (targetNames.isEmpty())
@@ -305,8 +283,7 @@ public class SkySlayerPlugin extends Plugin
 		for (Pattern target : targetNames)
 		{
 			final Matcher targetMatcher = target.matcher(name);
-			if (targetMatcher.find()
-				&& (ArrayUtils.contains(composition.getActions(), "Attack")
+			if (targetMatcher.find() && (ArrayUtils.contains(composition.getActions(), "Attack")
 					// Pick action is for zygomite-fungi
 					|| ArrayUtils.contains(composition.getActions(), "Pick")))
 			{
@@ -323,7 +300,7 @@ public class SkySlayerPlugin extends Plugin
 		if (task != null)
 		{
 			Arrays.stream(task.getTargetNames())
-				.map(SkySlayerPlugin::targetNamePattern)
+				.map(SlayerAdditionsPlugin::targetNamePattern)
 				.forEach(targetNames::add);
 
 			targetNames.add(targetNamePattern(taskName.replaceAll("s$", "")));
@@ -348,10 +325,9 @@ public class SkySlayerPlugin extends Plugin
 		}
 	}
 
-	@VisibleForTesting
 	void resetTask()
 	{
-		slayerMaster = "";
+		removeSlayerMaster();
 		setTask("", 0, null);
 	}
 
@@ -360,7 +336,6 @@ public class SkySlayerPlugin extends Plugin
 		taskName = name;
 		amount = amt;
 		taskLocation = location;
-		save();
 
 		Task task = Task.getTask(name);
 		rebuildTargetNames(task);
