@@ -1,3 +1,8 @@
+/*
+ * Plugin for additional slayer features.
+ * Based on the original slayer plugin from RuneLite.
+ */
+
 package sky.slayer;
 
 import com.google.inject.Provides;
@@ -122,9 +127,6 @@ public class SlayerAdditionsPlugin extends Plugin
 			loginFlag = true;
 			clientThread.invoke(this::updateTask);
 		}
-
-		String storedSlayerMaster = configManager.getRSProfileConfiguration(SlayerAdditionsConfig.GROUP_NAME, SlayerAdditionsConfig.SLAYER_MASTER_NAME_KEY);
-		slayerMaster = storedSlayerMaster == null ? "" : storedSlayerMaster;
 	}
 
 	@Override
@@ -199,6 +201,9 @@ public class SlayerAdditionsPlugin extends Plugin
 		int amount = client.getVarpValue(VarPlayer.SLAYER_TASK_SIZE);
 		if (amount > 0)
 		{
+			String storedSlayerMaster = configManager.getRSProfileConfiguration(SlayerAdditionsConfig.GROUP_NAME, SlayerAdditionsConfig.SLAYER_MASTER_NAME_KEY);
+			slayerMaster = storedSlayerMaster == null ? "" : storedSlayerMaster;
+
 			int taskId = client.getVarpValue(VarPlayer.SLAYER_TASK_CREATURE);
 			String taskName;
 			if (taskId == 98)
