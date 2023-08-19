@@ -19,13 +19,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
-import net.runelite.api.EnumID;
-import net.runelite.api.GameState;
-import net.runelite.api.NPC;
-import net.runelite.api.NPCComposition;
-import net.runelite.api.VarPlayer;
-import net.runelite.api.Varbits;
+import net.runelite.api.*;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
@@ -208,7 +202,8 @@ public class SlayerAdditionsPlugin extends Plugin
 			String taskName;
 			if (taskId == 98)
 			{
-				taskName = client.getEnum(EnumID.SLAYER_TASK_BOSS).getStringValue(client.getVarbitValue(Varbits.SLAYER_TASK_BOSS));
+				int structId = client.getEnum(EnumID.SLAYER_TASK).getIntValue(client.getVarbitValue(Varbits.SLAYER_TASK_BOSS));
+				taskName = client.getStructComposition(structId).getStringValue(ParamID.SLAYER_TASK_NAME);
 			}
 			else
 			{
