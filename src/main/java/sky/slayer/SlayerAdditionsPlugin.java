@@ -25,6 +25,8 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
@@ -241,8 +243,8 @@ public class SlayerAdditionsPlugin extends Plugin
 	public void onGameTick(GameTick tick)
 	{
 		loginFlag = false;
-		Widget npcName = client.getWidget(WidgetInfo.DIALOG_NPC_NAME);
-		Widget npcDialog = client.getWidget(WidgetInfo.DIALOG_NPC_TEXT);
+		Widget npcName = client.getWidget(ComponentID.DIALOG_NPC_NAME);
+		Widget npcDialog = client.getWidget(ComponentID.DIALOG_NPC_TEXT);
 		if (npcDialog != null && npcName != null && (npcName.getText().equals(TURAEL) || npcName.getText().equals(Aya) || npcName.getText().equals(SPRIA)))
 		{
 			String npcText = Text.sanitizeMultilineText(npcDialog.getText());
