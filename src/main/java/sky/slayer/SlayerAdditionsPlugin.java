@@ -97,10 +97,10 @@ public class SlayerAdditionsPlugin extends Plugin
 
 	public final Function<NPC, HighlightedNpc> slayerAdditionsHighlighter = (n) ->
 	{
-		if (targets.contains(n) && (config.highlightMinimap() || config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(Aya) || slayerMaster.equals(SPRIA))))
+		boolean shouldHighlight = config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(Aya) || slayerMaster.equals(SPRIA));
+		if (targets.contains(n) && (config.highlightMinimap() || shouldHighlight))
 		{
 			Color color = config.getTargetColor();
-			boolean shouldHighlight = config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(Aya) || slayerMaster.equals(SPRIA));
 			return HighlightedNpc.builder()
 					.npc(n)
 					.highlightColor(color)
