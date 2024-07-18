@@ -48,6 +48,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class SlayerAdditionsPlugin extends Plugin
 {
 	private static final String TURAEL = "Turael";
+	private static final String Aya = "Aya";
 	private static final String SPRIA = "Spria";
 
 	private static final Pattern SLAYER_ASSIGN_MESSAGE = Pattern.compile(".*(?:Your new task is to kill \\d+) (?<name>.+)(?:.)");
@@ -96,14 +97,18 @@ public class SlayerAdditionsPlugin extends Plugin
 
 	public final Function<NPC, HighlightedNpc> slayerAdditionsHighlighter = (n) ->
 	{
-		if (targets.contains(n) && (config.highlightMinimap() || config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(SPRIA))))
+		if (targets.contains(n) && (config.highlightMinimap() || config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(Aya) || slayerMaster.equals(SPRIA))))
 		{
 			Color color = config.getTargetColor();
+			boolean shouldHighlight = config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(Aya) || slayerMaster.equals(SPRIA));
 			return HighlightedNpc.builder()
 					.npc(n)
 					.highlightColor(color)
 					.fillColor(ColorUtil.colorWithAlpha(color, color.getAlpha() / 12))
-					.outline(config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(SPRIA)))
+					.outline(shouldHighlight && config.getHighlightMode() == HighlightMode.Outline)
+					.hull(shouldHighlight && config.getHighlightMode() == HighlightMode.Hull)
+					.tile(shouldHighlight && config.getHighlightMode() == HighlightMode.Tile)
+					.trueTile(shouldHighlight && config.getHighlightMode() == HighlightMode.Truetile)
 					.render(npc -> !npc.isDead())
 					.build();
 		}
@@ -238,7 +243,7 @@ public class SlayerAdditionsPlugin extends Plugin
 		loginFlag = false;
 		Widget npcName = client.getWidget(WidgetInfo.DIALOG_NPC_NAME);
 		Widget npcDialog = client.getWidget(WidgetInfo.DIALOG_NPC_TEXT);
-		if (npcDialog != null && npcName != null && (npcName.getText().equals(TURAEL) || npcName.getText().equals(SPRIA)))
+		if (npcDialog != null && npcName != null && (npcName.getText().equals(TURAEL) || npcName.getText().equals(Aya) || npcName.getText().equals(SPRIA)))
 		{
 			String npcText = Text.sanitizeMultilineText(npcDialog.getText());
 			final Matcher mAssign = SLAYER_ASSIGN_MESSAGE.matcher(npcText);

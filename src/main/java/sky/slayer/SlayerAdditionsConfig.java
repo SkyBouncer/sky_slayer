@@ -44,4 +44,14 @@ public interface SlayerAdditionsConfig extends Config
 	default Color getTargetColor() {
 		return Color.RED;
 	}
+
+	@ConfigItem(
+			position = 3,
+			keyName = "highlightMode",
+			name = "Highlight mode",
+			description = "How to highlight the targets"
+	)
+	default HighlightMode getHighlightMode() {
+		return HighlightMode.Outline;
+	}
 }
