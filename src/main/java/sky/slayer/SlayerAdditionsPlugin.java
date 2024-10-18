@@ -15,9 +15,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.GameStateChanged;
@@ -26,9 +23,7 @@ import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -50,7 +45,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class SlayerAdditionsPlugin extends Plugin
 {
 	private static final String TURAEL = "Turael";
-	private static final String Aya = "Aya";
+	private static final String AYA = "Aya";
 	private static final String SPRIA = "Spria";
 
 	private static final Pattern SLAYER_ASSIGN_MESSAGE = Pattern.compile(".*(?:Your new task is to kill \\d+) (?<name>.+)(?:.)");
@@ -71,46 +66,29 @@ public class SlayerAdditionsPlugin extends Plugin
 	@Inject
 	private NpcOverlayService npcOverlayService;
 
-	@Getter(AccessLevel.PACKAGE)
 	private final List<NPC> targets = new ArrayList<>();
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
 	private int amount;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private int initialAmount;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
 	private String taskLocation;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
 	private String taskName;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
 	private String slayerMaster;
-
 	private boolean loginFlag;
 	private final List<Pattern> targetNames = new ArrayList<>();
 
 	public final Function<NPC, HighlightedNpc> slayerAdditionsHighlighter = (n) ->
 	{
-		boolean shouldHighlight = config.highlightTurael() && (slayerMaster.equals(TURAEL) || slayerMaster.equals(Aya) || slayerMaster.equals(SPRIA));
-		if (targets.contains(n) && (config.highlightMinimap() || shouldHighlight))
+		boolean shouldHighlight = config.highlightTurael() && (TURAEL.equals(slayerMaster) || AYA.equals(slayerMaster) || SPRIA.equals(slayerMaster));
+		if ((shouldHighlight || config.highlightMinimap()) && targets.contains(n))
 		{
 			Color color = config.getTargetColor();
+			HighlightMode mode = config.getHighlightMode();
 			return HighlightedNpc.builder()
 					.npc(n)
 					.highlightColor(color)
 					.fillColor(ColorUtil.colorWithAlpha(color, color.getAlpha() / 12))
-					.outline(shouldHighlight && config.getHighlightMode() == HighlightMode.Outline)
-					.hull(shouldHighlight && config.getHighlightMode() == HighlightMode.Hull)
-					.tile(shouldHighlight && config.getHighlightMode() == HighlightMode.Tile)
-					.trueTile(shouldHighlight && config.getHighlightMode() == HighlightMode.Truetile)
+					.outline(shouldHighlight && mode == HighlightMode.Outline)
+					.hull(shouldHighlight && mode == HighlightMode.Hull)
+					.tile(shouldHighlight && mode == HighlightMode.Tile)
+					.trueTile(shouldHighlight && mode == HighlightMode.Truetile)
 					.render(npc -> !npc.isDead())
 					.build();
 		}
@@ -245,7 +223,7 @@ public class SlayerAdditionsPlugin extends Plugin
 		loginFlag = false;
 		Widget npcName = client.getWidget(ComponentID.DIALOG_NPC_NAME);
 		Widget npcDialog = client.getWidget(ComponentID.DIALOG_NPC_TEXT);
-		if (npcDialog != null && npcName != null && (npcName.getText().equals(TURAEL) || npcName.getText().equals(Aya) || npcName.getText().equals(SPRIA)))
+		if (npcDialog != null && npcName != null && (npcName.getText().equals(TURAEL) || npcName.getText().equals(AYA) || npcName.getText().equals(SPRIA)))
 		{
 			String npcText = Text.sanitizeMultilineText(npcDialog.getText());
 			final Matcher mAssign = SLAYER_ASSIGN_MESSAGE.matcher(npcText);
